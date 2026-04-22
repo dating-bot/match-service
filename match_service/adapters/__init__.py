@@ -1,0 +1,3 @@
+from match_service.adapters.like.postgres.adapter import PostgresLikeRepositoryAdapter as PostgresLikeRepositoryAdapter
+from match_service.adapters.match.postgres.adapter import PostgresMatchRepositoryAdapter as PostgresMatchRepositoryAdapter
+from match_service.adapters.outbox.postgres.adapter import PostgresOutboxRepositoryAdapter as PostgresOutboxRepositoryAdapter

@@ -1,0 +1,125 @@
+[project]
+name = "match-service"
+dynamic = ["version"]
+description = "match service"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.12.5",
+    "structlog>=25.5.0",
+    "dishka>=1.7.2",
+    "alembic>=1.17.2",
+    "asyncpg>=0.31.0",
+    "pydantic-settings>=2.12.0",
+    "python-dotenv>=1.2.1",
+    "psycopg2-binary>=2.9.11",
+    "sqlalchemy[asyncio]>=2.0.45",
+    "grpclib[protobuf]>=0.4.9",
+    "aio-pika>=9.6.1",
+    "pamqp>=3.3.0",
+]
+
+[dependency-groups]
+cicd = [
+    "basedpyright>=1.36.1",
+    "mypy>=1.19.1",
+]
+dev = [
+    "basedpyright>=1.36.1",
+    "hatch>=1.16.2",
+    "mypy>=1.19.1",
+    "ruff>=0.14.9",
+    "rust-just>=1.45.0",
+    "types-protobuf>=5.28.0",
+]
+testing = [
+    "diff-cover>=10.2.0",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cache>=1.0",
+    "pytest-cov>=7.0.0",
+    "pytest-icdiff>=0.9",
+    "pytest-mock>=3.15.1",
+    "pytest-xdist>=3.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+only-packages = true
+packages = ["match_service"]
+
+[tool.hatch.version]
+path = "match_service/__version__.py"
+
+[tool.uv]
+package = true
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+pythonPlatform = "Linux"
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnusedParameter = "warning"
+exclude = ["**/.venv", "**/__pycache__", "alembic", "match_service/tests"]
+typeCheckingMode = "recommended"
+
+[tool.mypy]
+exclude = [".*_test.py"]
+plugins = "pydantic.mypy"
+
+[tool.ruff]
+exclude = [".venv"]
+force-exclude = true
+line-length = 120
+indent-width = 4
+target-version = "py313"
+fix = true
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+fixable = ["ALL"]
+ignore = ["ANN", "D", "EM101", "RUF001", "BLE001", "SIM103", "ASYNC109", "TRY003", "PLW0602", "TC001", "ISC003", "COM812", "RUF003", "RUF002", "TRY301"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401", "TID252", "PLC0414"]
+"**/{tests,docs,tools}/*" = ["E402"]
+"match_service/tests/**/*" = ["S101"]
+"*_test.py" = ["ANN", "S", "S101", "TRY", "PGH003", "FBT", "PT012", "N801", "ARG002", "SLF001", "PLR", "SIM"]
+"alembic/*" = ["INP001"]
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 128
+
+[tool.coverage.run]
+omit = []
+
+[tool.coverage.report]
+omit = []
+
+[tool.pytest.ini_options]
+pythonpath = "."
+testpaths = ["match_service", "match_service/tests"]
+addopts = []
+filterwarnings = ["ignore::DeprecationWarning"]
+python_files = ["*_test.py", "test_*.py"]
+python_classes = "Test_*"
+asyncio_mode = "auto"

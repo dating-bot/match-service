@@ -1,0 +1,3 @@
+from match_service.protocols.like.repository import LikeRepositoryProtocol as LikeRepositoryProtocol
+from match_service.protocols.match.repository import MatchRepositoryProtocol as MatchRepositoryProtocol
+from match_service.protocols.outbox.repository import OutboxRepositoryProtocol as OutboxRepositoryProtocol

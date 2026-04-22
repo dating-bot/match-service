@@ -1,0 +1,1 @@
+from match_service.protocols.outbox.repository import OutboxRepositoryProtocol as OutboxRepositoryProtocol

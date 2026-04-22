@@ -1,0 +1,1 @@
+from match_service.adapters.like.postgres.adapter import PostgresLikeRepositoryAdapter as PostgresLikeRepositoryAdapter

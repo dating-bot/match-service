@@ -1,0 +1,1 @@
+from match_service.protocols.like.repository import LikeRepositoryProtocol as LikeRepositoryProtocol

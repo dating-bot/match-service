@@ -1,0 +1,23 @@
+
+debug = false
+
+[grpc_server]
+host = "0.0.0.0"
+port = 50052
+
+[postgres]
+host = "localhost"
+port = 5434
+username = "postgres"
+password = "postgres"
+database = "match_service"
+should_log_sql = false
+pool_size = 10
+pool_max_overflow = 20
+
+[rabbitmq]
+host = "localhost"
+port = 5672
+username = "guest"
+password = "guest"
+vhost = "/"
