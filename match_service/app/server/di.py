@@ -3,6 +3,7 @@ from typing import final
 import dishka
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from external_clients.ranking_api.v1.ranking_grpc import RankingServiceStub
 from match_service import adapters, infra, protocols, usecases
 from match_service.app.consumers.interaction_consumer import InteractionConsumer
 from match_service.app.server import grpc_handler
@@ -19,6 +20,7 @@ class InfraProvider(dishka.Provider):
     rabbitmq_connection = dishka.provide(staticmethod(infra.provide_rabbitmq_connection))
     topology = dishka.provide(staticmethod(infra.provide_match_service_topology))
     valkey = dishka.provide(staticmethod(infra.provide_valkey_client))
+    ranking_stub = dishka.provide(staticmethod(infra.provide_ranking_stub), provides=RankingServiceStub)
 
 
 @final
@@ -78,7 +80,21 @@ class UsecaseProvider(dishka.Provider):
 class AppProvider(dishka.Provider):
     scope = dishka.Scope.APP
 
-    interaction_consumer = dishka.provide(InteractionConsumer)
+    @dishka.provide
+    def provide_interaction_consumer(
+        self,
+        topology: infra.MatchServiceTopology,
+        handle_like: usecases.HandleLike[AsyncSession],
+        handle_skip: usecases.HandleSkip[AsyncSession],
+        ranking_stub: RankingServiceStub,
+    ) -> InteractionConsumer:
+        return InteractionConsumer(
+            topology=topology,
+            handle_like=handle_like,
+            handle_skip=handle_skip,
+            ranking_stub=ranking_stub,
+        )
+
     grpc_handler = dishka.provide(grpc_handler.MatchServiceHandler)
 
 

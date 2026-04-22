@@ -42,7 +42,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
     ) -> OutboxEvent:
         event_id = uuid.uuid4()
         result = await session.execute(
-            sa.insert(OutboxEventORM)
+            sa
+            .insert(OutboxEventORM)
             .values(
                 id=event_id,
                 event_type=request.event_type,
@@ -67,7 +68,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
     @override
     async def get_pending_events(self, session: AsyncSession, *, limit: int = 100) -> list[OutboxEvent]:
         result = await session.execute(
-            sa.select(OutboxEventORM)
+            sa
+            .select(OutboxEventORM)
             .where(OutboxEventORM.status == OutboxEventStatus.PENDING.value)
             .order_by(OutboxEventORM.created_at)
             .limit(limit)
@@ -77,7 +79,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
     @override
     async def mark_running(self, session: AsyncSession, event_id: uuid.UUID) -> None:
         await session.execute(
-            sa.update(OutboxEventORM)
+            sa
+            .update(OutboxEventORM)
             .where(OutboxEventORM.id == event_id)
             .values(status=OutboxEventStatus.RUNNING.value, updated_at=datetime.now(UTC))
         )
@@ -86,7 +89,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
     @override
     async def mark_done(self, session: AsyncSession, event_id: uuid.UUID) -> None:
         await session.execute(
-            sa.update(OutboxEventORM)
+            sa
+            .update(OutboxEventORM)
             .where(OutboxEventORM.id == event_id)
             .values(status=OutboxEventStatus.DONE.value, updated_at=datetime.now(UTC))
         )
@@ -95,7 +99,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
     @override
     async def mark_failed(self, session: AsyncSession, event_id: uuid.UUID) -> None:
         await session.execute(
-            sa.update(OutboxEventORM)
+            sa
+            .update(OutboxEventORM)
             .where(OutboxEventORM.id == event_id)
             .values(
                 status=OutboxEventStatus.FAILED.value,

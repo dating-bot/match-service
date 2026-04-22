@@ -14,17 +14,25 @@ import api.match_api.v1.match_pb2
 
 
 class MatchServiceBase(abc.ABC):
-
     @abc.abstractmethod
-    async def Health(self, stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HealthRequest, api.match_api.v1.match_pb2.HealthResponse]") -> None:
+    async def Health(
+        self,
+        stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HealthRequest, api.match_api.v1.match_pb2.HealthResponse]",
+    ) -> None:
         pass
 
     @abc.abstractmethod
-    async def HandleLike(self, stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HandleLikeRequest, api.match_api.v1.match_pb2.HandleLikeResponse]") -> None:
+    async def HandleLike(
+        self,
+        stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HandleLikeRequest, api.match_api.v1.match_pb2.HandleLikeResponse]",
+    ) -> None:
         pass
 
     @abc.abstractmethod
-    async def HandleSkip(self, stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HandleSkipRequest, api.match_api.v1.match_pb2.HandleSkipResponse]") -> None:
+    async def HandleSkip(
+        self,
+        stream: "grpclib.server.Stream[api.match_api.v1.match_pb2.HandleSkipRequest, api.match_api.v1.match_pb2.HandleSkipResponse]",
+    ) -> None:
         pass
 
     def __mapping__(self) -> dict[str, grpclib.const.Handler]:
@@ -51,7 +59,6 @@ class MatchServiceBase(abc.ABC):
 
 
 class MatchServiceStub:
-
     def __init__(self, channel: grpclib.client.Channel) -> None:
         self.Health = grpclib.client.UnaryUnaryMethod(
             channel,

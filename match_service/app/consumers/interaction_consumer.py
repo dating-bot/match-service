@@ -6,6 +6,7 @@ import aio_pika.abc
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from external_clients.ranking_api.v1.ranking_pb2 import UpdateEngagementRequest
 from match_service.domain.like import LikeStatus
 from match_service.infra.rabbitmq_topology import MatchServiceTopology
 from match_service.usecases.handle_like.usecase import HandleLike, HandleLikeDuplicateError
@@ -22,10 +23,12 @@ class InteractionConsumer:
         topology: MatchServiceTopology,
         handle_like: HandleLike[AsyncSession],
         handle_skip: HandleSkip[AsyncSession],
+        ranking_stub,
     ) -> None:
         self._topology = topology
         self._handle_like = handle_like
         self._handle_skip = handle_skip
+        self._ranking_stub = ranking_stub
 
     async def run(self) -> None:
         async with asyncio.TaskGroup() as tg:
@@ -64,8 +67,32 @@ class InteractionConsumer:
                 liked=liked,
                 is_new_match=result.is_new_match,
             )
+            if result.is_new_match and result.match is not None:
+                await self._notify_ranking_service(
+                    user1=result.match.user1_telegram_id,
+                    user2=result.match.user2_telegram_id,
+                    event_type="match_created",
+                )
         except HandleLikeDuplicateError:
             log.warning("duplicate like ignored", liker=liker, liked=liked)
+
+    async def _notify_ranking_service(
+        self,
+        user1: int,
+        user2: int,
+        event_type: str,
+    ) -> None:
+        try:
+            await self._ranking_stub.UpdateEngagement(
+                UpdateEngagementRequest(
+                    user1_telegram_id=user1,
+                    user2_telegram_id=user2,
+                    event_type=event_type,
+                )
+            )
+            log.debug("ranking_service notified", user1=user1, user2=user2, event_type=event_type)
+        except Exception as e:
+            log.exception("failed to notify ranking_service", user1=user1, user2=user2)
 
     async def _on_skip(self, message: aio_pika.abc.AbstractIncomingMessage) -> None:
         data: dict[str, object] = json.loads(message.body)

@@ -39,7 +39,8 @@ class PostgresInteractionStagingRepositoryAdapter(InteractionStagingRepositoryPr
         request: InteractionStagingRepositoryProtocol.InsertStagingRequest,
     ) -> InteractionStaging:
         result = await session.execute(
-            sa.insert(InteractionStagingORM)
+            sa
+            .insert(InteractionStagingORM)
             .values(
                 actor_telegram_id=request.actor_telegram_id,
                 target_telegram_id=request.target_telegram_id,

@@ -45,7 +45,8 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
     ) -> tuple[Match, Conversation]:
         u1, u2 = _canonical(request.user1_telegram_id, request.user2_telegram_id)
         match_result = await session.execute(
-            sa.insert(MatchORM)
+            sa
+            .insert(MatchORM)
             .values(user1_telegram_id=u1, user2_telegram_id=u2)
             .returning(MatchORM.id, MatchORM.user1_telegram_id, MatchORM.user2_telegram_id, MatchORM.created_at)
         )
@@ -53,7 +54,8 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
         match = MatchORM(**dict(match_row)).to_domain()
 
         conv_result = await session.execute(
-            sa.insert(ConversationORM)
+            sa
+            .insert(ConversationORM)
             .values(match_id=match.id)
             .returning(ConversationORM.id, ConversationORM.match_id, ConversationORM.status, ConversationORM.created_at)
         )
@@ -83,7 +85,8 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
     @override
     async def list_matches_by_user(self, session: AsyncSession, telegram_id: int) -> list[Match]:
         result = await session.execute(
-            sa.select(MatchORM)
+            sa
+            .select(MatchORM)
             .where(
                 sa.or_(
                     MatchORM.user1_telegram_id == telegram_id,

@@ -39,7 +39,8 @@ class PostgresLikeRepositoryAdapter(LikeRepositoryProtocol[AsyncSession]):
         request: LikeRepositoryProtocol.InsertLikeRequest,
     ) -> Like:
         result = await session.execute(
-            sa.insert(LikeORM)
+            sa
+            .insert(LikeORM)
             .values(
                 liker_telegram_id=request.liker_telegram_id,
                 liked_telegram_id=request.liked_telegram_id,

@@ -1,0 +1,51 @@
+services:
+  match_server:
+    build: .
+    container_name: match_service
+    ports:
+      - "50052:50051"
+    volumes:
+      - ./config.docker.toml:/app/config.toml:ro
+    networks:
+      - dating_bot_net
+    depends_on:
+      match_postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  match_postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: match
+      POSTGRES_PASSWORD: match
+      POSTGRES_DB: match
+    volumes:
+      - match_pgdata:/var/lib/postgresql/data
+    networks:
+      - dating_bot_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U match"]
+      interval: 5s
+      timeout: 3s
+
+  match_celery:
+    build: .
+    container_name: match_celery
+    command: celery -A match_service.app.celery worker --loglevel=info
+    volumes:
+      - ./config.docker.toml:/app/config.toml:ro
+    networks:
+      - dating_bot_net
+    depends_on:
+      - match_postgres
+
+networks:
+  dating_bot_net:
+    external: true
+
+volumes:
+  match_pgdata:
