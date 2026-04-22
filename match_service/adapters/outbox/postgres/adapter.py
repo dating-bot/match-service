@@ -35,10 +35,10 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
             await session.close()
 
     @override
-    async def create_event(
+    async def insert_event(
         self,
         session: AsyncSession,
-        request: OutboxRepositoryProtocol.CreateEventRequest,
+        request: OutboxRepositoryProtocol.InsertEventRequest,
     ) -> OutboxEvent:
         event_id = uuid.uuid4()
         result = await session.execute(

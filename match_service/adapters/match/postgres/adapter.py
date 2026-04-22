@@ -38,10 +38,10 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
             await session.close()
 
     @override
-    async def create_match(
+    async def insert_match(
         self,
         session: AsyncSession,
-        request: MatchRepositoryProtocol.CreateMatchRequest,
+        request: MatchRepositoryProtocol.InsertMatchRequest,
     ) -> tuple[Match, Conversation]:
         u1, u2 = _canonical(request.user1_telegram_id, request.user2_telegram_id)
         match_result = await session.execute(

@@ -13,12 +13,21 @@ class LikeRepositoryProtocol[SessionT](Protocol):
         yield  # pyright: ignore[reportUnreachable]
 
     @dataclass
-    class CreateLikeRequest:
+    class InsertLikeRequest:
         liker_telegram_id: int
         liked_telegram_id: int
         status: LikeStatus
 
-    async def create_like(self, session: SessionT, request: CreateLikeRequest) -> Like: ...
+    async def insert_like(self, session: SessionT, request: InsertLikeRequest) -> Like: ...
+
+    async def exists_reverse_like(
+        self,
+        session: SessionT,
+        liker_telegram_id: int,
+        liked_telegram_id: int,
+    ) -> bool:
+        """Return True if liked_telegram_id has already liked liker_telegram_id."""
+        ...
 
     async def get_like(
         self,

@@ -13,11 +13,11 @@ class MatchRepositoryProtocol[SessionT](Protocol):
         yield  # pyright: ignore[reportUnreachable]
 
     @dataclass
-    class CreateMatchRequest:
+    class InsertMatchRequest:
         user1_telegram_id: int
         user2_telegram_id: int
 
-    async def create_match(self, session: SessionT, request: CreateMatchRequest) -> tuple[Match, Conversation]: ...
+    async def insert_match(self, session: SessionT, request: InsertMatchRequest) -> tuple[Match, Conversation]: ...
 
     async def get_match_by_users(
         self,

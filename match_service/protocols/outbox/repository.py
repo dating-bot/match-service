@@ -14,11 +14,11 @@ class OutboxRepositoryProtocol[SessionT](Protocol):
         yield  # pyright: ignore[reportUnreachable]
 
     @dataclass
-    class CreateEventRequest:
+    class InsertEventRequest:
         event_type: str
         payload: dict[str, object] = field(default_factory=dict)
 
-    async def create_event(self, session: SessionT, request: CreateEventRequest) -> OutboxEvent: ...
+    async def insert_event(self, session: SessionT, request: InsertEventRequest) -> OutboxEvent: ...
 
     async def get_pending_events(self, session: SessionT, *, limit: int = 100) -> list[OutboxEvent]: ...
 

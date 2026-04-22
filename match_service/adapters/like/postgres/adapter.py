@@ -33,10 +33,10 @@ class PostgresLikeRepositoryAdapter(LikeRepositoryProtocol[AsyncSession]):
             await session.close()
 
     @override
-    async def create_like(
+    async def insert_like(
         self,
         session: AsyncSession,
-        request: LikeRepositoryProtocol.CreateLikeRequest,
+        request: LikeRepositoryProtocol.InsertLikeRequest,
     ) -> Like:
         result = await session.execute(
             sa.insert(LikeORM)
@@ -56,12 +56,27 @@ class PostgresLikeRepositoryAdapter(LikeRepositoryProtocol[AsyncSession]):
         row = result.mappings().one()
         like = LikeORM(**dict(row)).to_domain()
         log.debug(
-            "like created",
+            "like inserted",
             liker_telegram_id=request.liker_telegram_id,
             liked_telegram_id=request.liked_telegram_id,
             status=request.status,
         )
         return like
+
+    @override
+    async def exists_reverse_like(
+        self,
+        session: AsyncSession,
+        liker_telegram_id: int,
+        liked_telegram_id: int,
+    ) -> bool:
+        result = await session.execute(
+            sa.select(sa.exists().where(
+                LikeORM.liker_telegram_id == liked_telegram_id,
+                LikeORM.liked_telegram_id == liker_telegram_id,
+            ))
+        )
+        return bool(result.scalar())
 
     @override
     async def get_like(
