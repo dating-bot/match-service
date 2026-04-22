@@ -72,15 +72,15 @@ reportMissingImports = "error"
 reportMissingTypeStubs = false
 reportUnknownMemberType = false
 reportUnusedParameter = "warning"
-exclude = ["**/.venv", "**/__pycache__", "alembic", "match_service/tests"]
+exclude = ["**/.venv", "**/__pycache__", "match_api", "external_clients", "alembic", "match_service/tests", "scripts"]
 typeCheckingMode = "recommended"
 
 [tool.mypy]
-exclude = [".*_test.py"]
+exclude = [".*_test.py", "match_api", "external_clients", "scripts"]
 plugins = "pydantic.mypy"
 
 [tool.ruff]
-exclude = [".venv"]
+exclude = [".venv", "match_api", "external_clients", "scripts"]
 force-exclude = true
 line-length = 120
 indent-width = 4
@@ -115,10 +115,10 @@ ban-relative-imports = "all"
 max-line-length = 128
 
 [tool.coverage.run]
-omit = []
+omit = ["match_api", "external_clients"]
 
 [tool.coverage.report]
-omit = []
+omit = ["match_api", "external_clients"]
 
 [tool.pytest.ini_options]
 pythonpath = "."

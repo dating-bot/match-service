@@ -6,8 +6,8 @@ from grpclib import Status
 from grpclib.exceptions import GRPCError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.match_api.v1 import match_pb2
-from api.match_api.v1.match_grpc import MatchServiceBase
+from match_api.v1 import match_pb2
+from match_api.v1.match_grpc import MatchServiceBase
 from match_service.app.server.utils.unary import unary
 from match_service.domain.like import LikeStatus
 from match_service.usecases import HandleLike, HandleLikeDuplicateError, HandleLikeError, HandleSkip

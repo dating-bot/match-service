@@ -91,7 +91,7 @@ class InteractionConsumer:
                 )
             )
             log.debug("ranking_service notified", user1=user1, user2=user2, event_type=event_type)
-        except Exception as e:
+        except Exception:
             log.exception("failed to notify ranking_service", user1=user1, user2=user2)
 
     async def _on_skip(self, message: aio_pika.abc.AbstractIncomingMessage) -> None:

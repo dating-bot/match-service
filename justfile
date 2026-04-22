@@ -6,6 +6,31 @@ manage := "uv run"
 default:
     @just --choose
 
+generate-match-api:
+    buf lint
+    buf format --write
+    just generate-match-api-{{ os() }}
+
+alias generate-match-api-macos := generate-match-api-linux
+
+generate-match-api-linux:
+    rm -rf match_api
+    mkdir -p match_api
+    docker run --rm -v ./match_api:/match_api:rw -v ./api:/api:ro -w / ghcr.io/astral-sh/uv:python3.13-bookworm-slim \
+        uv run --with protoletariat==3.3.10,grpclib[protobuf]==0.4.9,mypy-protobuf==3.7.0,grpcio_tools==1.71.2 \
+            protol --in-place --create-package --python-out match_api \
+            protoc --protoc-path="python3 -m grpc_tools.protoc" --proto-path=api --python_out=. --grpclib_python_out=. --mypy_out=. \
+                match_api/v1/match.proto
+
+generate-match-api-windows:
+    Remove-Item -Recurse -Force .\match_api
+    mkdir match_api
+    docker run --rm -v .\match_api:/match_api:rw -v .\api:/api:ro -w / ghcr.io/astral-sh/uv:python3.13-bookworm-slim \
+        uv run --with protoletariat==3.3.10,grpclib[protobuf]==0.4.9,mypy-protobuf==3.7.0,grpcio_tools==1.71.2 \
+            protol --in-place --create-package --python-out match_api \
+            protoc --protoc-path="python3 -m grpc_tools.protoc" --proto-path=api --python_out=. --grpclib_python_out=. --mypy_out=. \
+                match_api/v1/match.proto
+
 lint:
     {{ manage }} ruff format .
     {{ manage }} ruff check --fix .

@@ -10,9 +10,9 @@ from match_service.protocols.like.repository import LikeRepositoryProtocol
 from match_service.protocols.match.repository import MatchRepositoryProtocol
 from match_service.protocols.outbox.repository import OutboxRepositoryProtocol
 from match_service.usecases.handle_like.usecase import (
+    MATCH_CREATED_EVENT,
     HandleLike,
     HandleLikeDuplicateError,
-    MATCH_CREATED_EVENT,
 )
 
 
