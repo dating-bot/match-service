@@ -1,0 +1,33 @@
+syntax = "proto3";
+package match_api.v1;
+
+service MatchService {
+  rpc Health(HealthRequest) returns (HealthResponse);
+  rpc HandleLike(HandleLikeRequest) returns (HandleLikeResponse);
+  rpc HandleSkip(HandleSkipRequest) returns (HandleSkipResponse);
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  bool ok = 1;
+}
+
+message HandleLikeRequest {
+  int64 liker_id = 1;
+  int64 liked_id = 2;
+}
+
+message HandleLikeResponse {
+  bool matched = 1;
+  optional int64 match_id = 2;
+}
+
+message HandleSkipRequest {
+  int64 actor_id = 1;
+  int64 target_id = 2;
+}
+
+message HandleSkipResponse {
+  bool success = 1;
+}

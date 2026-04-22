@@ -71,10 +71,12 @@ class PostgresLikeRepositoryAdapter(LikeRepositoryProtocol[AsyncSession]):
         liked_telegram_id: int,
     ) -> bool:
         result = await session.execute(
-            sa.select(sa.exists().where(
-                LikeORM.liker_telegram_id == liked_telegram_id,
-                LikeORM.liked_telegram_id == liker_telegram_id,
-            ))
+            sa.select(
+                sa.exists().where(
+                    LikeORM.liker_telegram_id == liked_telegram_id,
+                    LikeORM.liked_telegram_id == liker_telegram_id,
+                )
+            )
         )
         return bool(result.scalar())
 
@@ -97,17 +99,13 @@ class PostgresLikeRepositoryAdapter(LikeRepositoryProtocol[AsyncSession]):
     @override
     async def list_sent_likes(self, session: AsyncSession, liker_telegram_id: int) -> list[Like]:
         result = await session.execute(
-            sa.select(LikeORM)
-            .where(LikeORM.liker_telegram_id == liker_telegram_id)
-            .order_by(LikeORM.created_at)
+            sa.select(LikeORM).where(LikeORM.liker_telegram_id == liker_telegram_id).order_by(LikeORM.created_at)
         )
         return [row.to_domain() for row in result.scalars().all()]
 
     @override
     async def list_received_likes(self, session: AsyncSession, liked_telegram_id: int) -> list[Like]:
         result = await session.execute(
-            sa.select(LikeORM)
-            .where(LikeORM.liked_telegram_id == liked_telegram_id)
-            .order_by(LikeORM.created_at)
+            sa.select(LikeORM).where(LikeORM.liked_telegram_id == liked_telegram_id).order_by(LikeORM.created_at)
         )
         return [row.to_domain() for row in result.scalars().all()]

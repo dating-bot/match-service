@@ -3,7 +3,6 @@ from typing import final
 
 import structlog
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from match_service.domain.like import Like, LikeStatus
 from match_service.domain.match import Match
@@ -73,7 +72,7 @@ class HandleLike[SessionT]:
                         user2_telegram_id=request.liked_telegram_id,
                     ),
                 )
-                await self._outbox_repository.insert_event(
+                _ = await self._outbox_repository.insert_event(
                     session,
                     OutboxRepositoryProtocol.InsertEventRequest(
                         event_type=MATCH_CREATED_EVENT,
@@ -119,8 +118,5 @@ class HandleLike[SessionT]:
                 ),
             )
         except IntegrityError as e:
-            msg = (
-                f"Like from {request.liker_telegram_id} "
-                f"to {request.liked_telegram_id} already exists"
-            )
+            msg = f"Like from {request.liker_telegram_id} to {request.liked_telegram_id} already exists"
             raise HandleLikeDuplicateError(msg) from e

@@ -96,8 +96,6 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
 
     @override
     async def get_conversation_by_match(self, session: AsyncSession, match_id: int) -> Conversation | None:
-        result = await session.execute(
-            sa.select(ConversationORM).where(ConversationORM.match_id == match_id)
-        )
+        result = await session.execute(sa.select(ConversationORM).where(ConversationORM.match_id == match_id))
         orm = result.scalar_one_or_none()
         return orm.to_domain() if orm is not None else None

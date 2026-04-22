@@ -18,6 +18,7 @@ dependencies = [
     "aio-pika>=9.6.1",
     "pamqp>=3.3.0",
     "redis>=5.0.0",
+    "celery[redis]>=5.4.0",
 ]
 
 [dependency-groups]
@@ -100,6 +101,8 @@ unfixable = []
 "match_service/tests/**/*" = ["S101"]
 "*_test.py" = ["ANN", "S", "S101", "TRY", "PGH003", "FBT", "PT012", "N801", "ARG002", "SLF001", "PLR", "SIM"]
 "alembic/*" = ["INP001"]
+"**/match_api/**" = ["ERA001", "E501", "SLF001", "TC004", "N802"]
+"api/**" = ["ERA001", "E501", "SLF001", "TC004", "N802"]
 
 [tool.ruff.lint.flake8-bandit]
 check-typed-exception = true

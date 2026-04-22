@@ -47,7 +47,7 @@ class GlobalConfig(BaseSettings):
         return getters
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
-        env_prefix="MATCH_",
+        env_prefix="MATCH_SERVICE_",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_file=".env",

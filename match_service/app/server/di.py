@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from match_service import adapters, infra, protocols, usecases
 from match_service.app.consumers.interaction_consumer import InteractionConsumer
+from match_service.app.server import grpc_handler
 
 
 @final
@@ -78,6 +79,7 @@ class AppProvider(dishka.Provider):
     scope = dishka.Scope.APP
 
     interaction_consumer = dishka.provide(InteractionConsumer)
+    grpc_handler = dishka.provide(grpc_handler.MatchServiceHandler)
 
 
 container = dishka.make_async_container(InfraProvider(), AdapterProvider(), UsecaseProvider(), AppProvider())

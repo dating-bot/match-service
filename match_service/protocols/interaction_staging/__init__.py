@@ -1,1 +1,3 @@
-from match_service.protocols.interaction_staging.repository import InteractionStagingRepositoryProtocol as InteractionStagingRepositoryProtocol
+from match_service.protocols.interaction_staging.repository import (
+    InteractionStagingRepositoryProtocol as InteractionStagingRepositoryProtocol,
+)

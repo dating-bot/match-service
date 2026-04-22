@@ -131,9 +131,7 @@ class OutboxEventORM(Base):
         default=lambda: datetime.now(UTC),
     )
 
-    __table_args__: tuple[sa.Index] = (
-        sa.Index("ix_outbox_events_status_created_at", "status", "created_at"),
-    )
+    __table_args__: tuple[sa.Index] = (sa.Index("ix_outbox_events_status_created_at", "status", "created_at"),)
 
     def to_domain(self) -> OutboxEvent:
         return OutboxEvent(

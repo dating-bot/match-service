@@ -29,8 +29,8 @@ class InteractionConsumer:
 
     async def run(self) -> None:
         async with asyncio.TaskGroup() as tg:
-            tg.create_task(self._consume_likes())
-            tg.create_task(self._consume_skips())
+            _ = tg.create_task(self._consume_likes())
+            _ = tg.create_task(self._consume_skips())
 
     async def _consume_likes(self) -> None:
         async with self._topology.like_queue.iterator() as it:
@@ -72,5 +72,5 @@ class InteractionConsumer:
         actor = int(data["actor_telegram_id"])  # type: ignore[arg-type]
         target = int(data["target_telegram_id"])  # type: ignore[arg-type]
 
-        await self._handle_skip.execute(HandleSkip.Request(actor_telegram_id=actor, target_telegram_id=target))
+        _ = await self._handle_skip.execute(HandleSkip.Request(actor_telegram_id=actor, target_telegram_id=target))
         log.debug("skip processed", actor=actor, target=target)
