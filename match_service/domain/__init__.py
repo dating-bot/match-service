@@ -1,3 +1,4 @@
+from match_service.domain.interaction import InteractionStaging as InteractionStaging
 from match_service.domain.like import Like as Like
 from match_service.domain.like import LikeStatus as LikeStatus
 from match_service.domain.match import Conversation as Conversation

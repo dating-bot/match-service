@@ -1,3 +1,4 @@
+from match_service.protocols.interaction_staging.repository import InteractionStagingRepositoryProtocol as InteractionStagingRepositoryProtocol
 from match_service.protocols.like.repository import LikeRepositoryProtocol as LikeRepositoryProtocol
 from match_service.protocols.match.repository import MatchRepositoryProtocol as MatchRepositoryProtocol
 from match_service.protocols.outbox.repository import OutboxRepositoryProtocol as OutboxRepositoryProtocol

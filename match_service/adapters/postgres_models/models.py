@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from match_service.domain.interaction import InteractionStaging
 from match_service.domain.like import Like, LikeStatus
 from match_service.domain.match import Conversation, ConversationStatus, Match
 from match_service.domain.outbox import OutboxEvent, OutboxEventStatus
@@ -143,4 +144,32 @@ class OutboxEventORM(Base):
             attempts=self.attempts,
             created_at=self.created_at,
             updated_at=self.updated_at,
+        )
+
+
+@final
+class InteractionStagingORM(Base):
+    __tablename__: str = "interaction_staging"
+
+    id: Mapped[int] = mapped_column(sa.BigInteger(), primary_key=True, autoincrement=True)
+    actor_telegram_id: Mapped[int] = mapped_column(sa.BigInteger(), nullable=False)
+    target_telegram_id: Mapped[int] = mapped_column(sa.BigInteger(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.func.now(),
+        default=lambda: datetime.now(UTC),
+    )
+
+    __table_args__: tuple[sa.Index, sa.Index] = (
+        sa.Index("ix_interaction_staging_actor", "actor_telegram_id"),
+        sa.Index("ix_interaction_staging_target", "target_telegram_id"),
+    )
+
+    def to_domain(self) -> InteractionStaging:
+        return InteractionStaging(
+            id=self.id,
+            actor_telegram_id=self.actor_telegram_id,
+            target_telegram_id=self.target_telegram_id,
+            created_at=self.created_at,
         )

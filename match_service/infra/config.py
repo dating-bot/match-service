@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Settings
 from match_service.infra.grpc import GrpcServerConfig
 from match_service.infra.postgres import PostgresConfig
 from match_service.infra.rabbitmq_connection import RabbitMQConfig
+from match_service.infra.valkey import ValkeyConfig
 
 
 class GlobalConfig(BaseSettings):
@@ -14,6 +15,7 @@ class GlobalConfig(BaseSettings):
     postgres: PostgresConfig
     grpc_server: GrpcServerConfig
     rabbitmq: RabbitMQConfig
+    valkey: ValkeyConfig
 
     @classmethod
     def load(cls) -> "GlobalConfig":

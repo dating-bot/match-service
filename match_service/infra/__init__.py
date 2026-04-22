@@ -6,3 +6,8 @@ from match_service.infra.postgres import provide_async_engine as provide_async_e
 from match_service.infra.postgres import provide_async_session_factory as provide_async_session_factory
 from match_service.infra.rabbitmq_connection import RabbitMQConfig as RabbitMQConfig
 from match_service.infra.rabbitmq_connection import provide_rabbitmq_connection as provide_rabbitmq_connection
+from match_service.infra.rabbitmq_topology import MatchServiceTopology as MatchServiceTopology
+from match_service.infra.rabbitmq_topology import provide_match_service_topology as provide_match_service_topology
+from match_service.infra.valkey import ValkeyClient as ValkeyClient
+from match_service.infra.valkey import ValkeyConfig as ValkeyConfig
+from match_service.infra.valkey import provide_valkey_client as provide_valkey_client

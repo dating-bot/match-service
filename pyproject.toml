@@ -17,6 +17,7 @@ dependencies = [
     "grpclib[protobuf]>=0.4.9",
     "aio-pika>=9.6.1",
     "pamqp>=3.3.0",
+    "redis>=5.0.0",
 ]
 
 [dependency-groups]

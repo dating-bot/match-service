@@ -1,0 +1,1 @@
+from match_service.app.consumers.interaction_consumer import InteractionConsumer as InteractionConsumer

@@ -21,3 +21,9 @@ port = 5672
 username = "guest"
 password = "guest"
 vhost = "/"
+
+[valkey]
+host = "localhost"
+port = 6379
+db = 0
+match_debounce_ttl_seconds = 300

@@ -4,6 +4,7 @@ import signal
 import structlog
 
 from match_service import infra
+from match_service.app.consumers.interaction_consumer import InteractionConsumer
 from match_service.app.server import di
 from match_service.app.server.utils.logger import configure_logger
 
@@ -19,6 +20,8 @@ async def main() -> None:
     )
     log.info("Starting match-service")
 
+    consumer = await di.container.get(InteractionConsumer)
+
     shutdown_event = asyncio.Event()
 
     def signal_handler() -> None:
@@ -29,7 +32,8 @@ async def main() -> None:
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, signal_handler)
 
-    log.info("Server started successfully")
+    consumer_task = asyncio.create_task(consumer.run())
+    log.info("Consumer started", queues=["interaction.like", "interaction.skip"])
 
     try:
         _ = await shutdown_event.wait()
@@ -37,6 +41,8 @@ async def main() -> None:
         log.info("Keyboard interrupt received")
     finally:
         log.info("Stopping server")
+        consumer_task.cancel()
+        _ = await asyncio.gather(consumer_task, return_exceptions=True)
         await di.container.close()
         log.info("Server stopped")
 

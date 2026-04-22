@@ -1,4 +1,3 @@
 from match_service.usecases.handle_like.usecase import HandleLike as HandleLike
 from match_service.usecases.handle_like.usecase import HandleLikeDuplicateError as HandleLikeDuplicateError
 from match_service.usecases.handle_like.usecase import HandleLikeError as HandleLikeError
-from match_service.usecases.handle_skip.usecase import HandleSkip as HandleSkip
