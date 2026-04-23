@@ -8,6 +8,8 @@ from match_service.infra.rabbitmq_connection import RabbitMQConfig as RabbitMQCo
 from match_service.infra.rabbitmq_connection import provide_rabbitmq_connection as provide_rabbitmq_connection
 from match_service.infra.rabbitmq_topology import MatchServiceTopology as MatchServiceTopology
 from match_service.infra.rabbitmq_topology import provide_match_service_topology as provide_match_service_topology
+from match_service.infra.ranking_service import RankingServiceConfig as RankingServiceConfig
+from match_service.infra.ranking_service import provide_ranking_stub as provide_ranking_stub
 from match_service.infra.valkey import ValkeyClient as ValkeyClient
 from match_service.infra.valkey import ValkeyConfig as ValkeyConfig
 from match_service.infra.valkey import provide_valkey_client as provide_valkey_client

@@ -4,6 +4,7 @@ services:
     container_name: match_service
     ports:
       - "50052:50051"
+    command: ["uv", "-q", "run", "python3", "-m", "match_service"]
     volumes:
       - ./config.docker.toml:/app/config.toml:ro
     networks:
@@ -42,10 +43,14 @@ services:
       - dating_bot_net
     depends_on:
       - match_postgres
+    restart: unless-stopped
+    environment:
+      - CELERY_BROKER_URL=redis://valkey:6379/2
 
 networks:
   dating_bot_net:
     external: true
+    name: dating_bot_net
 
 volumes:
   match_pgdata:
