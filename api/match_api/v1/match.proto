@@ -6,6 +6,7 @@ service MatchService {
   rpc Health(HealthRequest) returns (HealthResponse);
   rpc HandleLike(HandleLikeRequest) returns (HandleLikeResponse);
   rpc HandleSkip(HandleSkipRequest) returns (HandleSkipResponse);
+  rpc ListUserMatches(ListUserMatchesRequest) returns (ListUserMatchesResponse);
 }
 
 message HealthRequest {}
@@ -31,4 +32,18 @@ message HandleSkipRequest {
 
 message HandleSkipResponse {
   bool success = 1;
+}
+
+message ListUserMatchesRequest {
+  int64 telegram_id = 1;
+  int32 limit = 2;
+}
+
+message UserMatch {
+  int64 match_id = 1;
+  int64 other_telegram_id = 2;
+}
+
+message ListUserMatchesResponse {
+  repeated UserMatch matches = 1;
 }

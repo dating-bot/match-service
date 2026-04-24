@@ -75,6 +75,14 @@ class UsecaseProvider(dishka.Provider):
         """юзкейс обработки скипа"""
         return usecases.HandleSkip[AsyncSession](interaction_staging_repository=staging_repo)
 
+    @dishka.provide
+    def provide_list_user_matches(
+        self,
+        match_repo: protocols.MatchRepositoryProtocol[AsyncSession],
+    ) -> usecases.ListUserMatches[AsyncSession]:
+        """юзкейс списка мэтчей пользователя (отладка / UI)"""
+        return usecases.ListUserMatches[AsyncSession](match_repository=match_repo)
+
 
 @final
 class AppProvider(dishka.Provider):
@@ -95,7 +103,18 @@ class AppProvider(dishka.Provider):
             ranking_stub=ranking_stub,
         )
 
-    grpc_handler = dishka.provide(grpc_handler.MatchServiceHandler)
+    @dishka.provide
+    def provide_match_service_handler(
+        self,
+        handle_like: usecases.HandleLike[AsyncSession],
+        handle_skip: usecases.HandleSkip[AsyncSession],
+        list_user_matches: usecases.ListUserMatches[AsyncSession],
+    ) -> grpc_handler.MatchServiceHandler:
+        return grpc_handler.MatchServiceHandler(
+            _handle_like=handle_like,
+            _handle_skip=handle_skip,
+            _list_user_matches=list_user_matches,
+        )
 
 
 container = dishka.make_async_container(InfraProvider(), AdapterProvider(), UsecaseProvider(), AppProvider())

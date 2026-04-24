@@ -10,9 +10,17 @@ from match_api.v1 import match_pb2
 from match_api.v1.match_grpc import MatchServiceBase
 from match_service.app.server.utils.unary import unary
 from match_service.domain.like import LikeStatus
-from match_service.usecases import HandleLike, HandleLikeDuplicateError, HandleLikeError, HandleSkip
+from match_service.usecases import (
+    HandleLike,
+    HandleLikeDuplicateError,
+    HandleLikeError,
+    HandleSkip,
+    ListUserMatches,
+)
 
 log = structlog.stdlib.get_logger("match_service.grpc")
+
+_LIST_USER_MATCHES_MAX_LIMIT = 200
 
 
 @final
@@ -20,6 +28,7 @@ log = structlog.stdlib.get_logger("match_service.grpc")
 class MatchServiceHandler(MatchServiceBase):
     _handle_like: HandleLike[AsyncSession]
     _handle_skip: HandleSkip[AsyncSession]
+    _list_user_matches: ListUserMatches[AsyncSession]
 
     @override
     @unary
@@ -69,3 +78,26 @@ class MatchServiceHandler(MatchServiceBase):
             )
         )
         return match_pb2.HandleSkipResponse(success=True)
+
+    @override
+    @unary
+    async def ListUserMatches(
+        self, request: match_pb2.ListUserMatchesRequest
+    ) -> match_pb2.ListUserMatchesResponse:
+        if not request.telegram_id:
+            raise GRPCError(Status.INVALID_ARGUMENT, "telegram_id is required")
+        limit = int(request.limit) if request.limit > 0 else 20
+        if limit < 1 or limit > _LIST_USER_MATCHES_MAX_LIMIT:
+            raise GRPCError(
+                Status.INVALID_ARGUMENT,
+                f"limit must be 1..{_LIST_USER_MATCHES_MAX_LIMIT}",
+            )
+
+        out = await self._list_user_matches.execute(
+            ListUserMatches.Request(telegram_id=request.telegram_id, limit=limit)
+        )
+        return match_pb2.ListUserMatchesResponse(
+            matches=[
+                match_pb2.UserMatch(match_id=m.match_id, other_telegram_id=m.other_telegram_id) for m in out.matches
+            ],
+        )

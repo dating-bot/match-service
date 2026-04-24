@@ -4,11 +4,18 @@ services:
     container_name: match_service
     ports:
       - "50052:50051"
-    command: ["uv", "-q", "run", "python3", "-m", "match_service"]
+    command:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic upgrade head && exec uv -q run python3 -m match_service",
+      ]
     volumes:
       - ./config.docker.toml:/app/config.toml:ro
     networks:
-      - dating_bot_net
+      dating_bot_net:
+        aliases:
+          - match_service
     depends_on:
       match_postgres:
         condition: service_healthy
@@ -36,7 +43,31 @@ services:
   match_celery:
     build: .
     container_name: match_celery
-    command: celery -A match_service.app.celery worker --loglevel=info
+    command:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic upgrade head && exec celery -A match_service.app.celery worker --loglevel=info",
+      ]
+    volumes:
+      - ./config.docker.toml:/app/config.toml:ro
+    networks:
+      - dating_bot_net
+    depends_on:
+      - match_postgres
+    restart: unless-stopped
+    environment:
+      - CELERY_BROKER_URL=redis://valkey:6379/2
+
+  match_beat:
+    build: .
+    container_name: match_beat
+    command:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic upgrade head && exec celery -A match_service.app.celery beat --loglevel=info",
+      ]
     volumes:
       - ./config.docker.toml:/app/config.toml:ro
     networks:

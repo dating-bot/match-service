@@ -1,4 +1,5 @@
 import asyncio
+from datetime import UTC, datetime
 
 import structlog
 from celery import shared_task
@@ -29,6 +30,14 @@ async def _flush_match_activity() -> int:
             match_id = key.split(":")[1]
             ts = await valkey.client.get(key)
             if ts:
+                try:
+                    parsed_ts = datetime.fromisoformat(ts)
+                    if parsed_ts.tzinfo is None:
+                        parsed_ts = parsed_ts.replace(tzinfo=UTC)
+                except ValueError:
+                    log.warning("invalid match activity timestamp in valkey, using current time", key=key, raw_value=ts)
+                    parsed_ts = datetime.now(UTC)
+
                 async with session_factory() as session:
                     _ = await session.execute(
                         text("""
@@ -36,7 +45,7 @@ async def _flush_match_activity() -> int:
                             SET match_last_activity = :ts
                             WHERE id = :match_id
                         """),
-                        {"ts": ts, "match_id": int(match_id)},
+                        {"ts": parsed_ts, "match_id": int(match_id)},
                     )
                     await session.commit()
                 await valkey.client.delete(key)

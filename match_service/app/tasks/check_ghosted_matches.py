@@ -34,6 +34,7 @@ async def _check_ghosted_matches() -> dict[str, int]:
                 """)
             )
             warned_matches = result.fetchall()
+            await session.commit()
             warnings_sent = len(warned_matches)
 
             for row in warned_matches:
@@ -53,6 +54,7 @@ async def _check_ghosted_matches() -> dict[str, int]:
                 """)
             )
             stale_matches = result.fetchall()
+            await session.commit()
             stale_marked = len(stale_matches)
 
             for row in stale_matches:

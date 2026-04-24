@@ -22,6 +22,10 @@ class RankingServiceBase(abc.ABC):
     async def UpdateEngagement(self, stream: 'grpclib.server.Stream[ranking_pb2.UpdateEngagementRequest, ranking_pb2.UpdateEngagementResponse]') -> None:
         pass
 
+    @abc.abstractmethod
+    async def GetViewerQueueState(self, stream: 'grpclib.server.Stream[ranking_pb2.GetViewerQueueStateRequest, ranking_pb2.GetViewerQueueStateResponse]') -> None:
+        pass
+
     def __mapping__(self) -> typing.Dict[str, grpclib.const.Handler]:
         return {
             '/ranking_api.v1.RankingService/GetNextCandidate': grpclib.const.Handler(
@@ -35,6 +39,12 @@ class RankingServiceBase(abc.ABC):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 ranking_pb2.UpdateEngagementRequest,
                 ranking_pb2.UpdateEngagementResponse,
+            ),
+            '/ranking_api.v1.RankingService/GetViewerQueueState': grpclib.const.Handler(
+                self.GetViewerQueueState,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                ranking_pb2.GetViewerQueueStateRequest,
+                ranking_pb2.GetViewerQueueStateResponse,
             ),
         }
 
@@ -53,4 +63,10 @@ class RankingServiceStub:
             '/ranking_api.v1.RankingService/UpdateEngagement',
             ranking_pb2.UpdateEngagementRequest,
             ranking_pb2.UpdateEngagementResponse,
+        )
+        self.GetViewerQueueState = grpclib.client.UnaryUnaryMethod(
+            channel,
+            '/ranking_api.v1.RankingService/GetViewerQueueState',
+            ranking_pb2.GetViewerQueueStateRequest,
+            ranking_pb2.GetViewerQueueStateResponse,
         )

@@ -54,6 +54,14 @@ class MatchORM(Base):
     id: Mapped[int] = mapped_column(sa.BigInteger(), primary_key=True, autoincrement=True)
     user1_telegram_id: Mapped[int] = mapped_column(sa.BigInteger(), nullable=False)
     user2_telegram_id: Mapped[int] = mapped_column(sa.BigInteger(), nullable=False)
+    match_last_activity: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.func.now(),
+        default=lambda: datetime.now(UTC),
+    )
+    ghost_warning_sent: Mapped[bool] = mapped_column(sa.Boolean(), nullable=False, server_default=sa.false())
+    is_stale: Mapped[bool] = mapped_column(sa.Boolean(), nullable=False, server_default=sa.false())
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
         nullable=False,
@@ -73,6 +81,9 @@ class MatchORM(Base):
             id=self.id,
             user1_telegram_id=self.user1_telegram_id,
             user2_telegram_id=self.user2_telegram_id,
+            match_last_activity=self.match_last_activity,
+            ghost_warning_sent=self.ghost_warning_sent,
+            is_stale=self.is_stale,
             created_at=self.created_at,
         )
 

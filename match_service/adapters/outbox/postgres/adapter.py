@@ -70,8 +70,8 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
         result = await session.execute(
             sa
             .select(OutboxEventORM)
-            .where(OutboxEventORM.status == OutboxEventStatus.PENDING.value)
-            .order_by(OutboxEventORM.created_at)
+            .where(OutboxEventORM.status.in_([OutboxEventStatus.PENDING.value, OutboxEventStatus.FAILED.value]))
+            .order_by(OutboxEventORM.attempts, OutboxEventORM.created_at)
             .limit(limit)
         )
         return [row.to_domain() for row in result.scalars().all()]
@@ -82,7 +82,11 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
             sa
             .update(OutboxEventORM)
             .where(OutboxEventORM.id == event_id)
-            .values(status=OutboxEventStatus.RUNNING.value, updated_at=datetime.now(UTC))
+            .values(
+                status=OutboxEventStatus.RUNNING.value,
+                attempts=OutboxEventORM.attempts + 1,
+                updated_at=datetime.now(UTC),
+            )
         )
         log.debug("outbox event marked running", event_id=event_id)
 
@@ -104,7 +108,6 @@ class PostgresOutboxRepositoryAdapter(OutboxRepositoryProtocol[AsyncSession]):
             .where(OutboxEventORM.id == event_id)
             .values(
                 status=OutboxEventStatus.FAILED.value,
-                attempts=OutboxEventORM.attempts + 1,
                 updated_at=datetime.now(UTC),
             )
         )

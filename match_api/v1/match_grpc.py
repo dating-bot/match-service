@@ -26,6 +26,10 @@ class MatchServiceBase(abc.ABC):
     async def HandleSkip(self, stream: 'grpclib.server.Stream[match_api.v1.match_pb2.HandleSkipRequest, match_api.v1.match_pb2.HandleSkipResponse]') -> None:
         pass
 
+    @abc.abstractmethod
+    async def ListUserMatches(self, stream: 'grpclib.server.Stream[match_api.v1.match_pb2.ListUserMatchesRequest, match_api.v1.match_pb2.ListUserMatchesResponse]') -> None:
+        pass
+
     def __mapping__(self) -> typing.Dict[str, grpclib.const.Handler]:
         return {
             '/match_api.v1.MatchService/Health': grpclib.const.Handler(
@@ -45,6 +49,12 @@ class MatchServiceBase(abc.ABC):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 match_api.v1.match_pb2.HandleSkipRequest,
                 match_api.v1.match_pb2.HandleSkipResponse,
+            ),
+            '/match_api.v1.MatchService/ListUserMatches': grpclib.const.Handler(
+                self.ListUserMatches,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                match_api.v1.match_pb2.ListUserMatchesRequest,
+                match_api.v1.match_pb2.ListUserMatchesResponse,
             ),
         }
 
@@ -69,4 +79,10 @@ class MatchServiceStub:
             '/match_api.v1.MatchService/HandleSkip',
             match_api.v1.match_pb2.HandleSkipRequest,
             match_api.v1.match_pb2.HandleSkipResponse,
+        )
+        self.ListUserMatches = grpclib.client.UnaryUnaryMethod(
+            channel,
+            '/match_api.v1.MatchService/ListUserMatches',
+            match_api.v1.match_pb2.ListUserMatchesRequest,
+            match_api.v1.match_pb2.ListUserMatchesResponse,
         )

@@ -48,7 +48,15 @@ class PostgresMatchRepositoryAdapter(MatchRepositoryProtocol[AsyncSession]):
             sa
             .insert(MatchORM)
             .values(user1_telegram_id=u1, user2_telegram_id=u2)
-            .returning(MatchORM.id, MatchORM.user1_telegram_id, MatchORM.user2_telegram_id, MatchORM.created_at)
+            .returning(
+                MatchORM.id,
+                MatchORM.user1_telegram_id,
+                MatchORM.user2_telegram_id,
+                MatchORM.match_last_activity,
+                MatchORM.ghost_warning_sent,
+                MatchORM.is_stale,
+                MatchORM.created_at,
+            )
         )
         match_row = match_result.mappings().one()
         match = MatchORM(**dict(match_row)).to_domain()

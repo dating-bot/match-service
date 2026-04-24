@@ -10,6 +10,7 @@ from match_service.protocols.like.repository import LikeRepositoryProtocol
 from match_service.protocols.match.repository import MatchRepositoryProtocol
 from match_service.protocols.outbox.repository import OutboxRepositoryProtocol
 from match_service.usecases.handle_like.usecase import (
+    LIKE_RECEIVED_EVENT,
     MATCH_CREATED_EVENT,
     HandleLike,
     HandleLikeDuplicateError,
@@ -130,9 +131,7 @@ class Test_HandleLike:
         response = await usecase.execute(request)
 
         mock_like_repository.insert_like.assert_called_once()
-        mock_like_repository.exists_reverse_like.assert_called_once_with(
-            mock_session, 100, 200
-        )
+        mock_like_repository.exists_reverse_like.assert_called_once_with(mock_session, 100, 200)
         mock_match_repository.insert_match.assert_not_called()
         assert response.is_new_match is False
         assert response.match is None
@@ -166,18 +165,75 @@ class Test_HandleLike:
         assert saved_request.user1_telegram_id == 100
         assert saved_request.user2_telegram_id == 200
 
-        mock_outbox_repository.insert_event.assert_called_once()
-        outbox_call_args = mock_outbox_repository.insert_event.call_args
-        outbox_request = outbox_call_args.args[1]
-        assert outbox_request.event_type == MATCH_CREATED_EVENT
-        assert outbox_request.payload["match_id"] == 42
+        assert mock_outbox_repository.insert_event.call_count == 2
+        first_outbox_request = mock_outbox_repository.insert_event.call_args_list[0].args[1]
+        second_outbox_request = mock_outbox_repository.insert_event.call_args_list[1].args[1]
+        assert first_outbox_request.event_type == LIKE_RECEIVED_EVENT
+        assert first_outbox_request.payload == {
+            "liker_telegram_id": 100,
+            "liked_telegram_id": 200,
+        }
+        assert second_outbox_request.event_type == MATCH_CREATED_EVENT
+        assert second_outbox_request.payload["match_id"] == 42
 
-        mock_valkey.set.assert_called_once_with(
-            "match_activity:42",
-            "1",
-            nx=True,
-            ex=300,
+        mock_valkey.set.assert_called_once()
+        assert mock_valkey.set.call_args.args[0] == "match_activity:42"
+        assert isinstance(mock_valkey.set.call_args.args[1], str)
+        assert mock_valkey.set.call_args.kwargs == {"nx": True, "ex": 300}
+
+    async def test_mutual_like_flow_requires_second_like_to_create_match(
+        self,
+        usecase: HandleLike[AsyncMock],
+        mock_like_repository: AsyncMock,
+        mock_match_repository: AsyncMock,
+        mock_outbox_repository: AsyncMock,
+        mock_valkey: AsyncMock,
+    ) -> None:
+        first_like = _make_like(id=1, liker_telegram_id=100, liked_telegram_id=200)
+        second_like = _make_like(id=2, liker_telegram_id=200, liked_telegram_id=100)
+        match = _make_match(id=77, user1_telegram_id=200, user2_telegram_id=100)
+
+        mock_like_repository.insert_like = AsyncMock(side_effect=[first_like, second_like])
+        mock_like_repository.exists_reverse_like = AsyncMock(side_effect=[False, True])
+        mock_match_repository.insert_match = AsyncMock(return_value=(match, None))
+
+        first_response = await usecase.execute(
+            HandleLike.Request(liker_telegram_id=100, liked_telegram_id=200),
         )
+        second_response = await usecase.execute(
+            HandleLike.Request(liker_telegram_id=200, liked_telegram_id=100),
+        )
+
+        assert first_response.is_new_match is False
+        assert first_response.match is None
+        assert second_response.is_new_match is True
+        assert second_response.match == match
+
+        assert mock_like_repository.insert_like.call_count == 2
+        first_like_request = mock_like_repository.insert_like.call_args_list[0].args[1]
+        second_like_request = mock_like_repository.insert_like.call_args_list[1].args[1]
+        assert first_like_request.liker_telegram_id == 100
+        assert first_like_request.liked_telegram_id == 200
+        assert second_like_request.liker_telegram_id == 200
+        assert second_like_request.liked_telegram_id == 100
+
+        mock_match_repository.insert_match.assert_called_once()
+        match_request = mock_match_repository.insert_match.call_args.args[1]
+        assert match_request.user1_telegram_id == 200
+        assert match_request.user2_telegram_id == 100
+
+        assert mock_outbox_repository.insert_event.call_count == 3
+        outbox_event_types = [
+            call.args[1].event_type for call in mock_outbox_repository.insert_event.call_args_list
+        ]
+        assert outbox_event_types == [
+            LIKE_RECEIVED_EVENT,
+            LIKE_RECEIVED_EVENT,
+            MATCH_CREATED_EVENT,
+        ]
+
+        mock_valkey.set.assert_called_once()
+        assert mock_valkey.set.call_args.args[0] == "match_activity:77"
 
     async def test_duplicate_like_raises_handle_like_duplicate_error(
         self,

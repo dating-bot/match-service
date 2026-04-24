@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import final
 
 import structlog
@@ -14,6 +15,7 @@ from match_service.protocols.outbox.repository import OutboxRepositoryProtocol
 log = structlog.stdlib.get_logger("match_service.usecases.HandleLike")
 
 MATCH_CREATED_EVENT = "match.created"
+LIKE_RECEIVED_EVENT = "like.received"
 
 
 class HandleLikeError(Exception):
@@ -59,6 +61,18 @@ class HandleLike[SessionT]:
 
         async with self._like_repository.context() as session:
             like = await self._insert_like(session, request)
+
+            _ = await self._outbox_repository.insert_event(
+                session,
+                OutboxRepositoryProtocol.InsertEventRequest(
+                    event_type=LIKE_RECEIVED_EVENT,
+                    payload={
+                        "liker_telegram_id": request.liker_telegram_id,
+                        "liked_telegram_id": request.liked_telegram_id,
+                    },
+                ),
+            )
+
             is_mutual = await self._like_repository.exists_reverse_like(
                 session,
                 request.liker_telegram_id,
@@ -92,9 +106,10 @@ class HandleLike[SessionT]:
                 )
 
         if match is not None:
+            match_activity_ts = datetime.now(UTC).isoformat()
             await self._valkey.set(
                 f"match_activity:{match.id}",
-                "1",
+                match_activity_ts,
                 nx=True,
                 ex=self._match_debounce_ttl,
             )
