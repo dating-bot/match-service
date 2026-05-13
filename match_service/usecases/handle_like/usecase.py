@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from typing import final
 
 import structlog
+import structlog.contextvars
 from sqlalchemy.exc import IntegrityError
 
 from match_service.domain.like import Like, LikeStatus
@@ -58,6 +59,7 @@ class HandleLike[SessionT]:
     async def execute(self, request: Request) -> Response:
         match: Match | None = None
         is_new_match = False
+        trace_id = str(structlog.contextvars.get_contextvars().get("trace_id") or "")
 
         async with self._like_repository.context() as session:
             like = await self._insert_like(session, request)
@@ -69,6 +71,8 @@ class HandleLike[SessionT]:
                     payload={
                         "liker_telegram_id": request.liker_telegram_id,
                         "liked_telegram_id": request.liked_telegram_id,
+                        "status": request.status.value,
+                        "trace_id": trace_id,
                     },
                 ),
             )
@@ -94,6 +98,7 @@ class HandleLike[SessionT]:
                             "match_id": match.id,
                             "user1_telegram_id": match.user1_telegram_id,
                             "user2_telegram_id": match.user2_telegram_id,
+                            "trace_id": trace_id,
                         },
                     ),
                 )

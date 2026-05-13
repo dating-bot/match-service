@@ -13,7 +13,8 @@ log = structlog.stdlib.get_logger("match_service.grpc.handler")
 
 def unary[T, I: Message, O: Message](handler: UnaryHandler[T, I, O]):
     async def wrapper(self: T, stream: Stream[I, O]) -> None:
-        with structlog.contextvars.bound_contextvars(trace_id=uuid4().hex):
+        trace_id = _extract_trace_id(stream) or uuid4().hex
+        with structlog.contextvars.bound_contextvars(trace_id=trace_id):
             request = await stream.recv_message()
             if request is None:
                 log.warning("received None (no request), skipping handlers", handler=wrapper.__qualname__)
@@ -40,3 +41,16 @@ def unary[T, I: Message, O: Message](handler: UnaryHandler[T, I, O]):
     wrapper.__doc__ = handler.__doc__
 
     return wrapper
+
+
+def _extract_trace_id(stream: Stream[Message, Message]) -> str | None:
+    metadata = getattr(stream, "metadata", None)
+    if metadata is None:
+        return None
+    trace_id = metadata.get("trace_id")
+    if trace_id:
+        return str(trace_id)
+    traceparent = metadata.get("traceparent")
+    if traceparent:
+        return str(traceparent)
+    return None

@@ -31,10 +31,13 @@ class OutboxPublisher:
                 aio_pika.ExchangeType.DIRECT,
                 durable=True,
             )
+            trace_id = str(payload.get("trace_id") or "")
+            headers = {"trace_id": trace_id} if trace_id else None
             message = aio_pika.Message(
                 body=json.dumps(payload).encode(),
                 content_type="application/json",
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                headers=headers,
             )
             _ = await exchange.publish(message, routing_key=event_type)
             log.debug("published outbox event", event_type=event_type, payload=payload)

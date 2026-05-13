@@ -169,10 +169,9 @@ class Test_HandleLike:
         first_outbox_request = mock_outbox_repository.insert_event.call_args_list[0].args[1]
         second_outbox_request = mock_outbox_repository.insert_event.call_args_list[1].args[1]
         assert first_outbox_request.event_type == LIKE_RECEIVED_EVENT
-        assert first_outbox_request.payload == {
-            "liker_telegram_id": 100,
-            "liked_telegram_id": 200,
-        }
+        assert first_outbox_request.payload["liker_telegram_id"] == 100
+        assert first_outbox_request.payload["liked_telegram_id"] == 200
+        assert first_outbox_request.payload["status"] == "liked"
         assert second_outbox_request.event_type == MATCH_CREATED_EVENT
         assert second_outbox_request.payload["match_id"] == 42
 
