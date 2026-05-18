@@ -1,6 +1,10 @@
 from celery import Celery
 from celery.schedules import crontab
 
+from match_service.infra.tracing import setup_tracing
+
+setup_tracing(service_name="match-service-celery")
+
 celery_app = Celery(
     "match_service",
     broker="redis://valkey:6379/2",

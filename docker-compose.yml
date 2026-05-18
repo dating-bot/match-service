@@ -19,6 +19,9 @@ services:
     depends_on:
       match_postgres:
         condition: service_healthy
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+      OTEL_EXPORTER_OTLP_INSECURE: ${OTEL_EXPORTER_OTLP_INSECURE:-true}
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=:50051"]
       interval: 10s
@@ -58,6 +61,8 @@ services:
     restart: unless-stopped
     environment:
       - CELERY_BROKER_URL=redis://valkey:6379/2
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+      - OTEL_EXPORTER_OTLP_INSECURE=${OTEL_EXPORTER_OTLP_INSECURE:-true}
 
   match_beat:
     build: .
@@ -77,6 +82,8 @@ services:
     restart: unless-stopped
     environment:
       - CELERY_BROKER_URL=redis://valkey:6379/2
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+      - OTEL_EXPORTER_OTLP_INSECURE=${OTEL_EXPORTER_OTLP_INSECURE:-true}
 
 networks:
   dating_bot_net:

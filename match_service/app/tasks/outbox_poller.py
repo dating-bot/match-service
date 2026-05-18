@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from match_service.adapters.outbox import PostgresOutboxRepositoryAdapter
 from match_service.infra.config import GlobalConfig
 from match_service.infra.rabbitmq_connection import RabbitMQConfig
+from match_service.infra.tracing import inject_trace_headers
 
 log = structlog.stdlib.get_logger("match_service.tasks.outbox_poller")
 
@@ -32,7 +33,7 @@ class OutboxPublisher:
                 durable=True,
             )
             trace_id = str(payload.get("trace_id") or "")
-            headers = {"trace_id": trace_id} if trace_id else None
+            headers = inject_trace_headers({"trace_id": trace_id} if trace_id else None)
             message = aio_pika.Message(
                 body=json.dumps(payload).encode(),
                 content_type="application/json",

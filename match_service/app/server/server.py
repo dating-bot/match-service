@@ -9,6 +9,7 @@ from match_service.app.consumers.interaction_consumer import InteractionConsumer
 from match_service.app.server import di
 from match_service.app.server.grpc_handler import MatchServiceHandler
 from match_service.app.server.utils.logger import configure_logger
+from match_service.infra.tracing import setup_tracing
 
 log = structlog.stdlib.get_logger("match_service.server")
 
@@ -36,6 +37,7 @@ async def main() -> None:
         json_mode=False,
         log_level="DEBUG" if config.debug else "INFO",
     )
+    setup_tracing(service_name="match-service")
     log.info("Starting match-service")
 
     consumer = await di.container.get(InteractionConsumer)
